@@ -17,8 +17,6 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Permission {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

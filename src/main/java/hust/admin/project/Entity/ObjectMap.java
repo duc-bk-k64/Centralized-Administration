@@ -14,8 +14,6 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class ObjectMap {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

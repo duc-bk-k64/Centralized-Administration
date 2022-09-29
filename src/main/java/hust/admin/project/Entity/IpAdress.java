@@ -10,8 +10,6 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class IpAdress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

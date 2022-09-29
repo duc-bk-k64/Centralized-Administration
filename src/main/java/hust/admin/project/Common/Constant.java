@@ -35,6 +35,7 @@ public class Constant {
 		public static final String NOT_ALLOWED = "Method not allowed";
 		public static final String BAN_USER = "User is banned";
 		public static final String INTERNAL_ERROR = "INTERNAL SERVER ERROR";
+		public static final String DATA_NULL = "Data is null";
 		
 	}
 
@@ -50,5 +51,10 @@ public class Constant {
 		public static final String DELETE = "DELETE";
 		public static final String CREATE = "CREATE";
 
+	}
+	public static final class NAME {
+		public static final String APPLICATION = "APPLICATION";
+		public static final String GROUP = "GROUP";
+		
 	}
 }

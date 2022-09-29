@@ -15,8 +15,6 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class ManageToken {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
