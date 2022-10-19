@@ -14,6 +14,7 @@ import hust.admin.project.Entity.Role;
 
 
 
+@SuppressWarnings("serial")
 public class CustomUserDetail implements UserDetails {
 	private String username;
 	private String password;

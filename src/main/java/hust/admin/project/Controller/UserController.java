@@ -17,7 +17,7 @@ import hust.admin.project.Service.UserService;
 public class UserController {
 	@Autowired
 	private UserService userService;
-	
+
 	@PostMapping("/user/active")
 	@ResponseBody
 	public ResponMessage activeUser(@RequestParam Long id) {
@@ -33,6 +33,7 @@ public class UserController {
 		}
 		return responMessage;
 	}
+
 	@PostMapping("/user/deactive")
 	@ResponseBody
 	public ResponMessage deactiveUser(@RequestParam Long id) {
@@ -48,6 +49,7 @@ public class UserController {
 		}
 		return responMessage;
 	}
+
 	@GetMapping("/user/getDeactiveUser")
 	@ResponseBody
 	public ResponMessage getDeactiveUser() {
@@ -63,6 +65,7 @@ public class UserController {
 		}
 		return responMessage;
 	}
+
 	@GetMapping("/user/getActiveUser")
 	@ResponseBody
 	public ResponMessage getActiveUser() {
@@ -79,5 +82,20 @@ public class UserController {
 		return responMessage;
 	}
 
-}
+	@GetMapping("/user/getUserByGroupId")
+	@ResponseBody
+	public ResponMessage getUserByGroupId(@RequestParam Long id) {
+		ResponMessage responMessage = new ResponMessage();
+		try {
+			responMessage.setData(userService.getUserByGroupId(id));
+			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
+			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
+		} catch (Exception e) {
+			responMessage.setData(e.getMessage());
+			responMessage.setMessage(Constant.MESSAGE.ERROR);
+			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
+		}
+		return responMessage;
+	}
 
+}

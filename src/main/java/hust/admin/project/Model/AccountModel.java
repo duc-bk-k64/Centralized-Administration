@@ -7,10 +7,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SignInData {
-	private String userName;
-	private String passWord;
-	private String email;
-	private List<String> role;
+public class AccountModel {
+	private Long id;
+	private String username;
 	private Long status;
+	private List<String> role;
+	private List<String> permission;
+
 }

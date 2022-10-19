@@ -1,5 +1,8 @@
 package hust.admin.project.Controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,24 +15,28 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import hust.admin.project.Common.Constant;
-import hust.admin.project.Entity.Application;
+import hust.admin.project.Entity.Group;
+import hust.admin.project.Model.GroupUserModel;
 import hust.admin.project.Model.ResponMessage;
-import hust.admin.project.Service.ApplicationService;
+import hust.admin.project.Service.GroupService;
+import hust.admin.project.Service.UserService;
 
 @RestController
 @RequestMapping(Constant.API.PREFIX)
-public class ApplicationController {
+public class GroupController {
 	@Autowired
-	private ApplicationService applicationService;
+	private GroupService groupService;
+	@Autowired 
+	private UserService userService;
 	
-	@PostMapping("/app/createApp")
+	@PostMapping("/group/createGroup")
 	@ResponseBody
-	public ResponMessage createApp(@RequestBody Application application) {
+	public ResponMessage createGroup(@RequestBody Group group) {
 		ResponMessage responMessage = new ResponMessage();
 		try {
 			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
 			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
-			responMessage.setData(applicationService.createApplication(application));
+			responMessage.setData(groupService.createGroup(group));
 		} catch (Exception e) {
 			responMessage.setMessage(Constant.MESSAGE.ERROR);
 			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
@@ -37,14 +44,14 @@ public class ApplicationController {
 		}
 		return responMessage;
 	}
-	@PutMapping("/app/updateApp")
+	@PutMapping("/group/updateGroup")
 	@ResponseBody
-	public ResponMessage updateApp(@RequestParam String app_code, @RequestBody Application application) {
+	public ResponMessage updateGroup(@RequestParam String group_code,@RequestBody Group group) {
 		ResponMessage responMessage = new ResponMessage();
 		try {
 			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
 			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
-			responMessage.setData(applicationService.updateApplication(app_code, application));
+			responMessage.setData(groupService.updateGroup(group_code, group));
 		} catch (Exception e) {
 			responMessage.setMessage(Constant.MESSAGE.ERROR);
 			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
@@ -52,59 +59,42 @@ public class ApplicationController {
 		}
 		return responMessage;
 	}
-	@DeleteMapping("/app/deleteApp")
+	@GetMapping("/group/getGroup")
 	@ResponseBody
-	public ResponMessage deleteApp(@RequestParam String app_code)  {
+	public ResponMessage getGroup(@RequestParam String group_code) {
 		ResponMessage responMessage = new ResponMessage();
 		try {
 			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
 			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
-			responMessage.setData(applicationService.deleteApplication(app_code));
+			responMessage.setData(groupService.getGroup(group_code));
 		} catch (Exception e) {
 			responMessage.setMessage(Constant.MESSAGE.ERROR);
 			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
 			responMessage.setData(e.getMessage());
 		}
 		return responMessage;
-		
 	}
-	@GetMapping("/app/getApp")
+	@DeleteMapping("/group/deleteGroup")
 	@ResponseBody
-	public ResponMessage getApp(@RequestParam String app_code)  {
+	public ResponMessage deleteGroup(@RequestParam String group_code) {
 		ResponMessage responMessage = new ResponMessage();
 		try {
 			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
 			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
-			responMessage.setData(applicationService.getApplication(app_code));
+			responMessage.setData(groupService.deleteGroup(group_code));
 		} catch (Exception e) {
 			responMessage.setMessage(Constant.MESSAGE.ERROR);
 			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
 			responMessage.setData(e.getMessage());
 		}
 		return responMessage;
-		
 	}
-	@PostMapping("/app/active")
+	@PostMapping("/group/active")
 	@ResponseBody
-	public ResponMessage activeApp(@RequestParam Long id) {
+	public ResponMessage activeGroup(@RequestParam Long id) {
 		ResponMessage responMessage = new ResponMessage();
 		try {
-			responMessage.setData(applicationService.activeApp(id));
-			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
-			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
-		} catch (Exception e) {
-			responMessage.setData(e.getMessage());
-			responMessage.setMessage(Constant.MESSAGE.ERROR);
-			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
-		}
-		return responMessage;
-	}
-	@PostMapping("/app/deactive")
-	@ResponseBody
-	public ResponMessage deactiveApp(@RequestParam Long id) {
-		ResponMessage responMessage = new ResponMessage();
-		try {
-			responMessage.setData(applicationService.deactiveApp(id));
+			responMessage.setData(groupService.activeGroup(id));
 			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
 			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
 		} catch (Exception e) {
@@ -114,12 +104,59 @@ public class ApplicationController {
 		}
 		return responMessage;
 	}
-	@GetMapping("/app/all")
+	@PostMapping("/group/deactive")
 	@ResponseBody
-	public ResponMessage findAllApplication() {
+	public ResponMessage deactiveGroup(@RequestParam Long id) {
 		ResponMessage responMessage = new ResponMessage();
 		try {
-			responMessage.setData(applicationService.allApplications());
+			responMessage.setData(groupService.deactiveGroup(id));
+			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
+			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
+		} catch (Exception e) {
+			responMessage.setData(e.getMessage());
+			responMessage.setMessage(Constant.MESSAGE.ERROR);
+			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
+		}
+		return responMessage;
+	}
+	@GetMapping("/group/findGroupByAppId")
+	@ResponseBody
+	public ResponMessage findGroupByAppId(@RequestParam Long id) {
+		ResponMessage responMessage = new ResponMessage();
+		try {
+			List<Group> groups = groupService.getGroupByAppId(id);
+			List<GroupUserModel> data = new ArrayList();
+			groups.forEach(group -> {
+				GroupUserModel groupUserModel = new GroupUserModel();
+				groupUserModel.setGroup_code(group.getGroup_code());
+				groupUserModel.setGroup_name(group.getGroup_name());
+				groupUserModel.setId(group.getId());
+				groupUserModel.setStatus(group.getStatus());
+				try {
+					groupUserModel.setUser(userService.getUserByGroupId(group.getId()));
+					data.add(groupUserModel);
+				} catch (Exception e) {
+					responMessage.setData(e.getMessage());
+					responMessage.setMessage(Constant.MESSAGE.ERROR);
+					responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
+				}
+			});
+			responMessage.setData(data);
+			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
+			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
+		} catch (Exception e) {
+			responMessage.setData(e.getMessage());
+			responMessage.setMessage(Constant.MESSAGE.ERROR);
+			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
+		}
+		return responMessage;
+	}
+	@GetMapping("/group/")
+	@ResponseBody
+	public ResponMessage findAllGroup() {
+		ResponMessage responMessage = new ResponMessage();
+		try {
+			responMessage.setData(groupService.findAllGroup());
 			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
 			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
 		} catch (Exception e) {

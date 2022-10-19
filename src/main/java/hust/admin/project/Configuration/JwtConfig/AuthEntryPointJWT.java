@@ -1,6 +1,6 @@
 package hust.admin.project.Configuration.JwtConfig;
 
-import static org.springframework.util.StringUtils.hasText;
+//import static org.springframework.util.StringUtils.hasText;
 
 import java.io.IOException;
 
@@ -19,7 +19,7 @@ public class AuthEntryPointJWT implements AuthenticationEntryPoint {
 //	private JwtProvider jwtProvider;
 //	@Autowired
 //	private AccountRepository accountRepository;
-	private static final String AUTHORIZATION = "Authorization";
+//	private static final String AUTHORIZATION = "Authorization";
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJWT.class);
 
@@ -40,12 +40,12 @@ public class AuthEntryPointJWT implements AuthenticationEntryPoint {
 
 	}
 
-	private String getTokenFromRequest(HttpServletRequest request) {
-		String bearer = request.getHeader(AUTHORIZATION);
-		if (hasText(bearer)) {
-			return bearer;
-
-		}
-		return null;
-	}
+//	private String getTokenFromRequest(HttpServletRequest request) {
+//		String bearer = request.getHeader(AUTHORIZATION);
+//		if (hasText(bearer)) {
+//			return bearer;
+//
+//		}
+//		return null;
+//	}
 }

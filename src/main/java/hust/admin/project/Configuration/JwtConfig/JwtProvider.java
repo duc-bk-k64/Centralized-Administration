@@ -13,6 +13,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import hust.admin.project.Repository.AccountRepository;
+import hust.admin.project.Repository.ManageTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -21,8 +22,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 public class JwtProvider {
 	@Autowired
 	AccountRepository accountRepository;
-//	@Autowired
-//	ManageTokenRepository manageTokenRepository;
+	@Autowired
+	ManageTokenRepository manageTokenRepository;
 //	@Value("$(secret_key)")
 	private String jwtSecret = "CUDANVUV@10021050";
 	private final String LOCALHOST_IPV4 = "127.0.0.1";
@@ -36,8 +37,8 @@ public class JwtProvider {
 	}
 
 	public boolean validateToken(String token) {
-//		if (manageTokenRepository.existsByToken(token))
-//			return false;
+		if (manageTokenRepository.existsByToken(token))
+			return false;
 //		String userLogin = getLoginFormToke(token);
 //		Account account = accountRepository.findUserByUsername(userLogin);
 //		if (!account.getIpAdress().equals(getClientIp()))

@@ -14,7 +14,8 @@ public class Constant {
 		public static final Long NOT_FOUND = 404L;
 		public static final Long NOT_ALLOWED = 405L;
 		public static final Long BAN_USER = -2L;
-		public static final Long INTERNAL_ERROR = 500L;
+		public static final Long INTERNAL_ERROR = 500L; 
+		public static final Long ACCESS_DENIED = 403L;
 
 	}
 
@@ -36,7 +37,9 @@ public class Constant {
 		public static final String BAN_USER = "User is banned";
 		public static final String INTERNAL_ERROR = "INTERNAL SERVER ERROR";
 		public static final String DATA_NULL = "Data is null";
-		
+		public static final String ACTIVE = "Active";
+		public static final String DEACTIVE = "Deactive";
+		public static final String DENIED = "Access denied";
 	}
 
 	public static final class ROLE {
@@ -55,6 +58,14 @@ public class Constant {
 	public static final class NAME {
 		public static final String APPLICATION = "APPLICATION";
 		public static final String GROUP = "GROUP";
+		public static final String LOG = "LOG";
+		public static final String IP_ADRESS = "IP_ADRESS";
+		public static final String SCHEDULE = "SCHEDULE";
+		public static final String USER = "USER";
+ 		
+	}
+	public static final class ACTION {
+		public static final String LOGIN = "Login";
 		
 	}
 }

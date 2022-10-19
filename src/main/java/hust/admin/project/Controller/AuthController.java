@@ -1,7 +1,9 @@
 package hust.admin.project.Controller;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.time.Instant;
+//import java.util.HashSet;
+//import java.util.Set;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,19 +19,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hust.admin.project.Common.Constant;
 import hust.admin.project.Configuration.JwtConfig.JwtProvider;
+import hust.admin.project.Entity.AccessLog;
 import hust.admin.project.Entity.Account;
-import hust.admin.project.Entity.Permission;
-import hust.admin.project.Entity.Role;
+import hust.admin.project.Entity.Application;
+import hust.admin.project.Entity.Group;
+//import hust.admin.project.Entity.Permission;
+//import hust.admin.project.Entity.Role;
 import hust.admin.project.Entity.User;
 import hust.admin.project.Model.ResponMessage;
 import hust.admin.project.Model.SignInData;
 import hust.admin.project.Model.UserModel;
 import hust.admin.project.Repository.AccountRepository;
-import hust.admin.project.Repository.PermissionRepository;
-import hust.admin.project.Repository.RoleRepository;
+import hust.admin.project.Repository.ApplicationRepository;
+import hust.admin.project.Repository.GroupRepository;
+//import hust.admin.project.Repository.PermissionRepository;
+//import hust.admin.project.Repository.RoleRepository;
 import hust.admin.project.Repository.UserRepository;
-
-
+import hust.admin.project.Service.AccessLogService;
 
 @RestController
 @RequestMapping(Constant.API.PREFIX_AUTH)
@@ -38,16 +44,22 @@ public class AuthController {
 	private AccountRepository accountRepository;
 	@Autowired
 	private JwtProvider jwtProvider;
-	@Autowired
-	private RoleRepository roleRepository;
+//	@Autowired
+//	private RoleRepository roleRepository;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
-	@Autowired
-	private PermissionRepository permissionRepository;
+//	@Autowired
+//	private PermissionRepository permissionRepository;
 	@Autowired
 	private UserRepository userRepository;
 //	@Autowired
 //	private AccountService accountService;
+	@Autowired
+	private AccessLogService accessLogService;
+	@Autowired
+	private GroupRepository groupRepository;
+	@Autowired
+	private ApplicationRepository applicationRepository;
 	private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
 	@PostMapping("/signin")
@@ -56,7 +68,7 @@ public class AuthController {
 
 		Account account = accountRepository.findUserByUsername(data.getUserName());
 		ResponMessage responMessage = new ResponMessage();
-		logger.info(jwtProvider.getClientIp());
+//		logger.info(jwtProvider.getClientIp());
 
 		if (account == null) {
 			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
@@ -67,63 +79,18 @@ public class AuthController {
 			responMessage.setMessage(Constant.MESSAGE.PASSWORD_INCORRECT);
 			return responMessage;
 
-		} 
-//		else if (account.getIpAdress()!=null){
-//			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
-//			responMessage.setMessage(Constant.MESSAGE.ACCOUNT_USED);
-//			return responMessage;
-//			
-//		}
-		else {
-//			account.setIpAdress(jwtProvider.getClientIp());
-//			accountRepository.save(account);
+		} else if (account.getStatus() == Constant.STATUS.DE_ACTIVE) {
+			responMessage.setResultCode(Constant.RESULT_CODE.BAN_USER);
+			responMessage.setMessage(Constant.MESSAGE.BAN_USER);
+			return responMessage;
+
+		} else {
 			String token = jwtProvider.generateToken(data.getUserName());
 			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
 			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
 			responMessage.setData(token);
 			return responMessage;
 		}
-	}
-
-	@PostMapping("/signup")
-	@ResponseBody
-	public ResponMessage signup(@RequestBody SignInData signUp) {
-		logger.info("call api");
-		ResponMessage responMessage = new ResponMessage();
-		
-		if (accountRepository.existsByUsername(signUp.getUserName())) {
-			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
-			responMessage.setMessage(Constant.MESSAGE.USERNAME_EXIST);
-			return responMessage;
-
-		} else {
-			try {
-				Account account = new Account();
-				account.setStatus(Constant.STATUS.ACTIVE);
-				account.setUsername(signUp.getUserName());
-				account.setPassword(passwordEncoder.encode(signUp.getPassWord()));
-				Set<Role> roles = new HashSet<>();
-				Role role = roleRepository.findByName(Constant.ROLE.EMPLOYEE);
-				roles.add(role);
-				Set<Permission> permissions = new HashSet<>();
-				Permission permission = permissionRepository.findByName(Constant.PERMISSION.READ);
-				permissions.add(permission);
-				account.setRoles(roles);
-				account.setPermissions(permissions);
-				account.setEmail(signUp.getEmail());
-				accountRepository.save(account);
-				responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
-				responMessage.setMessage(Constant.MESSAGE.SUCCESS);
-				responMessage.setData(account);
-				return responMessage;
-			} catch (Exception e) {
-				responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
-				responMessage.setMessage(Constant.MESSAGE.ERROR);
-				responMessage.setData(e.getMessage());
-				return responMessage;
-			}
-		}
-
 	}
 
 //	@PostMapping("/forgotpw")
@@ -166,68 +133,116 @@ public class AuthController {
 	@GetMapping("/authFail")
 	@ResponseBody
 	public ResponMessage authFail() {
-		ResponMessage responMessage= new ResponMessage();
+		ResponMessage responMessage = new ResponMessage();
 		responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
 		responMessage.setMessage(Constant.MESSAGE.ERROR);
 		responMessage.setData("Authentication failure");
 		return responMessage;
 	}
+
 	@GetMapping("/accessDenied")
 	@ResponseBody
 	public ResponMessage accessDenied() {
-		ResponMessage responMessage= new ResponMessage();
-		responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
-		responMessage.setMessage(Constant.MESSAGE.ERROR);
+		ResponMessage responMessage = new ResponMessage();
+		responMessage.setResultCode(Constant.RESULT_CODE.ACCESS_DENIED);
+		responMessage.setMessage(Constant.MESSAGE.DENIED);
 		responMessage.setData("Access denied");
 		return responMessage;
 	}
+
 	@PostMapping("/createUser")
 	@ResponseBody
 	public ResponMessage createUser(@RequestBody UserModel data) {
 		ResponMessage responMessage = new ResponMessage();
-		if(data==null) {
+		if (data == null) {
 			responMessage.setMessage(Constant.MESSAGE.ERROR);
 			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
 			responMessage.setData("Data  is null");
-			return  responMessage;
-		}
-		else {
-			User user=new User();
+			return responMessage;
+		} else {
+			User user = new User();
 			user.setEmail(data.getEmail());
 			user.setUsername(data.getUserName());
 			user.setStatus(Constant.STATUS.DE_ACTIVE);
-//			userRepository.save(user);
 			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
 			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
 			responMessage.setData(userRepository.save(user));
 			return responMessage;
-			
+
 		}
-		
+
 	}
+
 	@GetMapping("/canSignIn")
 	@ResponseBody
-	public ResponMessage canSignIn(@RequestParam String username) {
-		User user=userRepository.findByUsername(username);
-		ResponMessage responMessage=new ResponMessage();
-		if(user==null) {
+	public ResponMessage canSignIn(@RequestParam String username, @RequestParam String app_code) throws Exception {
+		ResponMessage responMessage = new ResponMessage();
+		AccessLog accessLog = new AccessLog();
+		try {
+			User user = userRepository.findByUsername(username);
+			accessLog.setAction(Constant.ACTION.LOGIN);
+			accessLog.setTime_log(Instant.now());
+			accessLog.setIp_address(jwtProvider.getClientIp());
+			accessLog.setUsername(username);
+
+			if (user == null) {
+				responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
+				responMessage.setMessage(Constant.MESSAGE.NOT_FOUND_USER);
+				accessLog.setStatus(Constant.MESSAGE.ERROR);
+				accessLogService.createLog(accessLog);
+				return responMessage;
+			} else if (user.getStatus() == Constant.STATUS.DE_ACTIVE) { // check if user is de active
+				responMessage.setResultCode(Constant.RESULT_CODE.BAN_USER);
+				responMessage.setMessage(Constant.MESSAGE.BAN_USER);
+				accessLog.setStatus(Constant.MESSAGE.ERROR);
+				accessLogService.createLog(accessLog);
+
+				return responMessage;
+
+			} else { // check application and group is de-active
+				Group group = groupRepository.findGroupByUserId(user.getId(), Constant.NAME.GROUP, Constant.NAME.USER);
+				Long groupId = group.getId();
+				List<Application> applications = applicationRepository.findApplicationByGroupId(groupId,
+						Constant.NAME.APPLICATION, Constant.NAME.GROUP);
+				int error = 0;
+				if (group == null || applications == null || group.getStatus() == Constant.STATUS.DE_ACTIVE) {
+					responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
+					responMessage.setMessage(Constant.MESSAGE.ERROR);
+					accessLog.setStatus(Constant.MESSAGE.ERROR);
+				} else {
+					for (int i = 0; i < applications.size(); i++) {
+						if (applications.get(i).getApp_code() == app_code) {
+							if (applications.get(i).getStatus() == Constant.STATUS.DE_ACTIVE) {
+								error = 1;
+							} else
+								error = 0;
+							break;
+						} else
+							error = 1;
+					}
+					if (error == 0) {
+						responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
+						responMessage.setMessage(Constant.MESSAGE.SUCCESS);
+						accessLog.setStatus(Constant.MESSAGE.SUCCESS);
+					} else {
+						responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
+						responMessage.setMessage(Constant.MESSAGE.ERROR);
+						accessLog.setStatus(Constant.MESSAGE.ERROR);
+					}
+				}
+				accessLogService.createLog(accessLog);
+				return responMessage;
+
+			}
+		} catch (Exception e) {
 			responMessage.setResultCode(Constant.RESULT_CODE.ERROR);
-			responMessage.setMessage(Constant.MESSAGE.NOT_FOUND_USER);
+			responMessage.setMessage(Constant.MESSAGE.ERROR);
+			responMessage.setData(e.getMessage());
+			accessLog.setStatus(Constant.MESSAGE.ERROR);
+			accessLogService.createLog(accessLog);
 			return responMessage;
 		}
-		else if(user.getStatus() == Constant.STATUS.DE_ACTIVE) {
-			responMessage.setResultCode(Constant.RESULT_CODE.BAN_USER);
-			responMessage.setMessage(Constant.MESSAGE.BAN_USER);
-			return responMessage;
-			
-		}
-		else {
-			responMessage.setResultCode(Constant.RESULT_CODE.SUCCESS);
-			responMessage.setMessage(Constant.MESSAGE.SUCCESS);
-			return responMessage;
-			
-		}
-		
+
 	}
 
 }
